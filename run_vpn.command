@@ -87,13 +87,13 @@ while kill -0 $CLIENT_PID 2>/dev/null; do
         
         if [[ "$key" == "p" || "$key" == "P" ]]; then
              # DEBUG: Print exact status
-             RAW_STATUS=$(networksetup -getsocksfirewallproxy "$SERVICE" | grep "Enabled:")
+             RAW_STATUS=$(networksetup -getsocksfirewallproxy "$SERVICE" | grep "^Enabled:")
              STATUS=$(echo "$RAW_STATUS" | awk '{print $2}')
              
              # Trim potential whitespace
              STATUS=$(echo "$STATUS" | xargs)
 
-             printf "DEBUG: RawStatus=['%s'] ParsedStatus=['%s']\n" "$RAW_STATUS" "$STATUS"
+             # printf "DEBUG: RawStatus=['%s'] ParsedStatus=['%s']\n" "$RAW_STATUS" "$STATUS"
 
              if [ "$STATUS" == "Yes" ]; then
                  networksetup -setsocksfirewallproxystate "$SERVICE" off
