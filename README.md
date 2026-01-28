@@ -17,7 +17,8 @@ To start the VPN and automatically configure your Mac's proxy settings:
 1.  Navigate to the project folder.
 2.  Double-click `run_vpn.command`.
 3.  Enter your password when prompted (required to change network settings).
-4.  **To Stop**: Press `CTRL+C` in the terminal window. The proxy will be disabled automatically.
+4.  Press P from yourkeyboard to pause/resume the Tunneling.
+5.  **To stop**: Press CTRL+C in the terminal window or close all terminal windows with CMD+Q.. in both cases, the proxy will be automatically disabled.
 
 Or..
 
