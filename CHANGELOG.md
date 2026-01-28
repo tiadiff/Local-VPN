@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [v1.0.4] - Smart Notifications 🧠
+### Added
+- **Smart Notification Deduplication**: Notifications are now only triggered for *new* unique trackers.
+  - A persistent history file (`seen_trackers.txt`) is created in the project folder to remember previously blocked domains.
+  - Prevents repetitive notifications from the same tracker while keeping the user informed of new threats.
+- **Dynamic Path Resolution**: The application now correctly locates its data files relative to the executable path, ensuring reliability regardless of the launch directory.
+
+### Changed
+- Improved notification logic: New trackers are saved immediately, while the visual notification adheres to a 30-second cooldown to avoid spam.
+
 ## [v1.0.3] - Privacy Shield Edition 🛡️
 ### Added
 - **Global Tracker Blocklist Expansion**: Added hundreds of new domains including:

@@ -48,11 +48,11 @@ func init() {
 }
 
 func loadSeenTrackers() {
-	// Debug log removed to reduce noise, logic is now robust
 	// fmt.Printf("DEBUG: Loading trackers from: %s\n", trackingFile)
 
 	file, err := os.Open(trackingFile)
 	if err != nil {
+		// fmt.Printf("DEBUG: Could not open tracker file (might be new): %v\n", err)
 		return // File might not exist yet
 	}
 	defer file.Close()
