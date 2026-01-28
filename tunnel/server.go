@@ -143,8 +143,7 @@ func handleProxyRequest(clientConn net.Conn, target string) {
 	}
 	defer targetConn.Close()
 
-	// utils.Info("Proxy: %s", target)
-	// reduced log spam
+	utils.Success("Proxy Established: %s", target)
 	utils.WritePacket(clientConn, []byte("OK"))
 
 	// Pipe

@@ -119,6 +119,14 @@ func handleSocksConnection(localConn net.Conn, cfg *config.Config) {
 	}
 
 	// Now we have the target.
+	utils.Info("SOCKS Request: %s", target)
+
+	if IsBlocked(target) {
+		utils.Block("Connection denied (Client-side): %s", target)
+		localConn.Write([]byte{0x05, 0x02, 0x00, 0x01, 0, 0, 0, 0, 0, 0}) // Rule restricted
+		return
+	}
+
 	// Connect to VPN Server
 	// Send Auth Header: "SECRET|CONNECT|target"
 	authMsg := fmt.Sprintf("%s|CONNECT|%s", cfg.Secret, target)
