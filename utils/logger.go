@@ -35,7 +35,7 @@ func NotifyBlocked(target string) {
 	defer notifyMutex.Unlock()
 
 	// Cooldown: 10 seconds
-	if time.Since(lastNotification) < 10*time.Second {
+	if time.Since(lastNotification) < 30*time.Second {
 		return
 	}
 
