@@ -1,6 +1,7 @@
 package tunnel
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -11,9 +12,9 @@ import (
 	"vpn_proto/utils"
 )
 
-func StartSocksClient(cfg *config.Config) error {
+func StartSocksClient(ctx context.Context, cfg *config.Config) error {
 	serverEndpoint := fmt.Sprintf("%s:%d", cfg.ServerAddr, cfg.Port)
-	log.Printf("Connecting to server at %s...", serverEndpoint)
+	utils.Info("Connecting to server at %s...", serverEndpoint)
 
 	// 1. Connect to Tunnel Server
 	// In SOCKS mode, we don't open a persistent connection for control.
@@ -22,23 +23,35 @@ func StartSocksClient(cfg *config.Config) error {
 
 	// We just start the listener here.
 
-	log.Printf("Starting SOCKS server on :%d", cfg.SocksPort)
+	utils.Success("Starting SOCKS server on :%d", cfg.SocksPort)
 
 	// 3. Start Local SOCKS Server
 	listenAddr := fmt.Sprintf("127.0.0.1:%d", cfg.SocksPort)
-	ln, err := net.Listen("tcp", listenAddr)
+	lc := net.ListenConfig{}
+	ln, err := lc.Listen(ctx, "tcp", listenAddr)
 	if err != nil {
 		return err
 	}
+	defer ln.Close()
+
+	go func() {
+		<-ctx.Done()
+		ln.Close()
+	}()
 
 	for {
 		localConn, err := ln.Accept()
 		if err != nil {
-			log.Printf("Socks accept error: %v", err)
-			continue
+			select {
+			case <-ctx.Done():
+				return nil
+			default:
+				utils.Error("Socks accept error: %v", err)
+				continue
+			}
 		}
 
-		log.Printf("Accepted SOCKS connection from %s", localConn.RemoteAddr())
+		// utils.Info("Accepted SOCKS connection from %s", localConn.RemoteAddr())
 		go handleSocksConnection(localConn, cfg)
 	}
 }
@@ -50,30 +63,16 @@ func handleSocksConnection(localConn net.Conn, cfg *config.Config) {
 	serverEndpoint := fmt.Sprintf("%s:%d", cfg.ServerAddr, cfg.Port)
 	tlsConfig, err := crypto.LoadClientTLS(cfg.CertFile, cfg.KeyFile, cfg.CAFile)
 	if err != nil {
-		log.Printf("Failed to load mTLS config: %v", err)
+		utils.Error("Failed to load mTLS config: %v", err)
 		return
 	}
 
 	remoteConn, err := tls.Dial("tcp", serverEndpoint, tlsConfig)
 	if err != nil {
-		log.Printf("Failed to dial upstream: %v", err)
+		utils.Warn("Failed to dial upstream: %v", err)
 		return
 	}
 	defer remoteConn.Close()
-
-	// 2. Auth with "SOCKS" prefix so server knows it's a proxy request?
-	// Actually, if we just use the same protocol, the Server will try to write it to TUN.
-	// We need to tell the server "I want to CONNECT to target:port".
-
-	// Let's modify the authentication packet to include mode.
-	// "SECRET|MODE|TARGET"
-
-	// Wait, standard SOCKS5 handshake is:
-	// Client -> SOCKS Server (Us) -> Handshake -> Request (Connect google.com:80)
-	// We need to READ the request from localConn, extract target, send it to Remote Server.
-
-	// Using go-socks5 is complex if we want to channel it.
-	// Let's implement a very stupid SOCKS5 server helper.
 
 	// SOCKS5 Init
 	buf := make([]byte, 256)

@@ -1,10 +1,10 @@
 package tunnel
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"vpn_proto/config"
 	"vpn_proto/crypto"
@@ -17,7 +17,7 @@ import (
 )
 
 // StartServer starts the VPN server
-func StartServer(cfg *config.Config) error {
+func StartServer(ctx context.Context, cfg *config.Config) error {
 	// 1. Create TUN interface (Only needed if we do L3 routing, but we keep it for backward compat)
 	// For pure proxy mode, we don't strict need it, but the code currently mixes them.
 	// Let's keep it but handle errors gracefully if not sudo.
@@ -27,11 +27,11 @@ func StartServer(cfg *config.Config) error {
 	})
 	var ifceName string
 	if err != nil {
-		log.Printf("Warning: failed to create TUN (running without sudo?): %v. L3 mode will fail, Proxy mode will work.", err)
+		utils.Warn("Failed to create TUN (running without sudo?): %v. L3 mode disabled.", err)
 	} else {
 		defer ifce.Close()
 		ifceName = ifce.Name()
-		log.Printf("Interface %s created", ifceName)
+		utils.Success("Interface %s created", ifceName)
 	}
 
 	// 2. Setup TLS listener with mTLS
@@ -40,33 +40,46 @@ func StartServer(cfg *config.Config) error {
 		return fmt.Errorf("failed to load mTLS config: %v (Did you run -gen-certs?)", err)
 	}
 
-	ln, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", cfg.Port))
+	lc := net.ListenConfig{}
+	ln, err := lc.Listen(ctx, "tcp", fmt.Sprintf("0.0.0.0:%d", cfg.Port))
 	if err != nil {
 		return err
 	}
+	defer ln.Close()
 
-	log.Printf("Server listening on 0.0.0.0:%d", cfg.Port)
+	utils.Success("Server listening on 0.0.0.0:%d", cfg.Port)
+
+	// Accept loop
+	go func() {
+		<-ctx.Done()
+		ln.Close()
+	}()
 
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			log.Printf("Accept error: %v", err)
-			continue
+			select {
+			case <-ctx.Done():
+				return nil // Normal shutdown
+			default:
+				utils.Error("Accept error: %v", err)
+				continue
+			}
 		}
 
 		// Handle connection in a goroutine
-		go handleClient(conn, ifce, cfg, tlsConfig)
+		go handleClient(conn, ifce, tlsConfig)
 	}
 }
 
-func handleClient(rawConn net.Conn, ifce *water.Interface, cfg *config.Config, tlsConfig *tls.Config) {
+func handleClient(rawConn net.Conn, ifce *water.Interface, tlsConfig *tls.Config) {
 	// Upgrade to TLS
 	conn := tls.Server(rawConn, tlsConfig)
 	// Don't defer close immediately, we might need it open long time
 	defer conn.Close()
 
 	if err := conn.Handshake(); err != nil {
-		log.Printf("TLS handshake failed: %v", err)
+		utils.Warn("TLS handshake failed: %v", err)
 		return
 	}
 
@@ -74,7 +87,7 @@ func handleClient(rawConn net.Conn, ifce *water.Interface, cfg *config.Config, t
 	authData, err := utils.ReadPacket(conn)
 	conn.SetDeadline(time.Time{}) // Clear deadline
 	if err != nil {
-		log.Printf("Failed to read auth: %v", err)
+		utils.Warn("Failed to read auth: %v", err)
 		return
 	}
 
@@ -91,7 +104,7 @@ func handleClient(rawConn net.Conn, ifce *water.Interface, cfg *config.Config, t
 		handleProxyRequest(conn, parts[2])
 	} else {
 		if ifce == nil {
-			log.Printf("Client requested TUN mode but TAP/TUN is not available")
+			utils.Warn("Client requested TUN mode but TAP/TUN is not available")
 			return
 		}
 		handleTunSession(conn, ifce)
@@ -100,12 +113,10 @@ func handleClient(rawConn net.Conn, ifce *water.Interface, cfg *config.Config, t
 
 func handleProxyRequest(clientConn net.Conn, target string) {
 	if IsBlocked(target) {
-		log.Printf("[BLOCKED] Connection to tracker denied: %s", target)
+		utils.Block("Connection denied: %s", target)
 		utils.WritePacket(clientConn, []byte("FAIL")) // Or silent drop
 		return
 	}
-
-	log.Printf("Proxying connection to %s", target)
 
 	// Connect to target
 	// Use DoH to resolve hostname to IP
@@ -113,26 +124,27 @@ func handleProxyRequest(clientConn net.Conn, target string) {
 
 	// Check if host is an IP, if not, resolve via DoH
 	if net.ParseIP(host) == nil && host != "localhost" {
-		log.Printf("Resolving %s via DoH...", host)
+		utils.Secure("Resolving %s via DoH...", host)
 		ip, err := ResolveDoH(host)
 		if err != nil {
-			log.Printf("DoH failed for %s: %v. Falling back to system DNS.", host, err)
+			utils.Warn("DoH failed for %s: %v. Fallback to system DNS.", host, err)
 			// Fallback or fail?
 			// Let's fallback for robustness but log warning
 		} else {
 			target = net.JoinHostPort(ip, port)
-			log.Printf("DoH Resolved: %s -> %s", host, ip)
 		}
 	}
 
 	targetConn, err := net.DialTimeout("tcp", target, 10*time.Second)
 	if err != nil {
-		log.Printf("Failed to dial target %s: %v", target, err)
+		utils.Warn("Failed to dial target %s: %v", target, err)
 		utils.WritePacket(clientConn, []byte("FAIL"))
 		return
 	}
 	defer targetConn.Close()
 
+	// utils.Info("Proxy: %s", target)
+	// reduced log spam
 	utils.WritePacket(clientConn, []byte("OK"))
 
 	// Pipe
@@ -141,7 +153,7 @@ func handleProxyRequest(clientConn net.Conn, target string) {
 }
 
 func handleTunSession(conn net.Conn, ifce *water.Interface) {
-	log.Printf("Starting TUN session for %s", conn.RemoteAddr())
+	utils.Info("Starting TUN session for %s", conn.RemoteAddr())
 
 	// Start Pump
 	// Tun -> TCP
@@ -150,7 +162,7 @@ func handleTunSession(conn net.Conn, ifce *water.Interface) {
 		for {
 			n, err := ifce.Read(buf)
 			if err != nil {
-				log.Printf("TUN read error: %v", err)
+				utils.Error("TUN read error: %v", err)
 				return
 			}
 			err = utils.WritePacket(conn, buf[:n])
@@ -167,13 +179,13 @@ func handleTunSession(conn net.Conn, ifce *water.Interface) {
 		packet, err := utils.ReadPacket(conn)
 		if err != nil {
 			if err != io.EOF {
-				log.Printf("TCP read error: %v", err)
+				utils.Error("TCP read error: %v", err)
 			}
 			break
 		}
 		_, err = ifce.Write(packet)
 		if err != nil {
-			log.Printf("TUN write error: %v", err)
+			utils.Error("TUN write error: %v", err)
 			break
 		}
 	}

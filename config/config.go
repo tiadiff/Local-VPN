@@ -49,9 +49,17 @@ func Load() (*Config, error) {
 		mode = ModeSocks
 	default:
 		if *genCerts {
-			return &Config{GenCerts: true}, nil
+			// UI or GenCerts don't strictly require mode
+			return &Config{
+				GenCerts:   *genCerts,
+				Port:       *port,
+				SocksPort:  *socksPort,
+				ServerAddr: *serverAddr,
+				CertFile:   *certFile,
+				KeyFile:    *keyFile,
+				CAFile:     *caFile,
+			}, nil
 		}
-		// If not generating certs, mode is required
 		return nil, fmt.Errorf("invalid or missing mode: %s", *modeStr)
 	}
 
