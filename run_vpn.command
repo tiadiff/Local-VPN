@@ -70,8 +70,21 @@ sleep 1
     -cert "$DIR/client.crt" -key "$DIR/client.key" -ca "$DIR/ca.crt" &
 CLIENT_PID=$!
 
-printf "${GREEN}[RUN]  Sistema pronto. Premi CTRL+C per terminare.${NC}\n"
+printf "${GREEN}[RUN]  Sistema pronto. Premi 'p' per Pausa/Ripresa, CTRL+C per terminare.${NC}\n"
 echo "------------------------------------------------------------"
 
-# Wait for client
-wait $CLIENT_PID
+while kill -0 $CLIENT_PID 2>/dev/null; do
+    read -t 1 -n 1 -s key
+    if [[ $key == "p" || $key == "P" ]]; then
+         STATUS=$(networksetup -getsocksfirewallproxy "$SERVICE" | grep "Enabled:" | awk '{print $2}')
+         if [ "$STATUS" == "Yes" ]; then
+             networksetup -setsocksfirewallproxystate "$SERVICE" off
+             printf "\n${YELLOW}[PAUSED] VPN disattivata temporaneamente.${NC}\n"
+             osascript -e 'display notification "VPN Disattivata" with title "Secure Tunnel" subtitle "Paused ⏸️"'
+         else
+             networksetup -setsocksfirewallproxystate "$SERVICE" on
+             printf "\n${GREEN}[RESUMED] VPN riattivata.${NC}\n"
+             osascript -e 'display notification "VPN Attiva" with title "Secure Tunnel" subtitle "Resumed ▶️"'
+         fi
+    fi
+done
