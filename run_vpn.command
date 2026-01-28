@@ -81,14 +81,22 @@ while kill -0 $CLIENT_PID 2>/dev/null; do
     # Check if key is actually empty (timeout) or not
     if [[ -n "$key" ]]; then
         if [[ "$key" == "p" || "$key" == "P" ]]; then
-             STATUS=$(networksetup -getsocksfirewallproxy "$SERVICE" | grep "Enabled:" | awk '{print $2}')
+             # DEBUG: Print exact status
+             RAW_STATUS=$(networksetup -getsocksfirewallproxy "$SERVICE" | grep "Enabled:")
+             STATUS=$(echo "$RAW_STATUS" | awk '{print $2}')
+             
+             # Trim potential whitespace
+             STATUS=$(echo "$STATUS" | xargs)
+
+             # printf "DEBUG: Raw=['%s'] Parsed=['%s']\n" "$RAW_STATUS" "$STATUS"
+
              if [ "$STATUS" == "Yes" ]; then
                  networksetup -setsocksfirewallproxystate "$SERVICE" off
-                 printf "\n${YELLOW}[PAUSED] VPN disattivata temporaneamente.${NC}\n"
+                 printf "\n${YELLOW}[PAUSED] VPN disattivata temporaneamente (Traffico Diretto).${NC}\n"
                  osascript -e 'display notification "VPN Disattivata" with title "Secure Tunnel" subtitle "Paused ⏸️"'
              else
                  networksetup -setsocksfirewallproxystate "$SERVICE" on
-                 printf "\n${GREEN}[RESUMED] VPN riattivata.${NC}\n"
+                 printf "\n${GREEN}[RESUMED] VPN riattivata (Traffico Protetto).${NC}\n"
                  osascript -e 'display notification "VPN Attiva" with title "Secure Tunnel" subtitle "Resumed ▶️"'
              fi
         fi
