@@ -1,0 +1,17 @@
+# Binaries
+vpn
+vpn.exe
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Mac
+.DS_Store
+
+# Keys and Secrets
+# Note: In a real app never commit secrets. 
+# We keep this warning here.
+
+# Logs
+*.log
