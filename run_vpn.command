@@ -74,17 +74,23 @@ printf "${GREEN}[RUN]  Sistema pronto. Premi 'p' per Pausa/Ripresa, CTRL+C per t
 echo "------------------------------------------------------------"
 
 while kill -0 $CLIENT_PID 2>/dev/null; do
+    key=""
+    # Silent read of 1 char with 1s timeout
     read -t 1 -n 1 -s key
-    if [[ $key == "p" || $key == "P" ]]; then
-         STATUS=$(networksetup -getsocksfirewallproxy "$SERVICE" | grep "Enabled:" | awk '{print $2}')
-         if [ "$STATUS" == "Yes" ]; then
-             networksetup -setsocksfirewallproxystate "$SERVICE" off
-             printf "\n${YELLOW}[PAUSED] VPN disattivata temporaneamente.${NC}\n"
-             osascript -e 'display notification "VPN Disattivata" with title "Secure Tunnel" subtitle "Paused ⏸️"'
-         else
-             networksetup -setsocksfirewallproxystate "$SERVICE" on
-             printf "\n${GREEN}[RESUMED] VPN riattivata.${NC}\n"
-             osascript -e 'display notification "VPN Attiva" with title "Secure Tunnel" subtitle "Resumed ▶️"'
-         fi
+    
+    # Check if key is actually empty (timeout) or not
+    if [[ -n "$key" ]]; then
+        if [[ "$key" == "p" || "$key" == "P" ]]; then
+             STATUS=$(networksetup -getsocksfirewallproxy "$SERVICE" | grep "Enabled:" | awk '{print $2}')
+             if [ "$STATUS" == "Yes" ]; then
+                 networksetup -setsocksfirewallproxystate "$SERVICE" off
+                 printf "\n${YELLOW}[PAUSED] VPN disattivata temporaneamente.${NC}\n"
+                 osascript -e 'display notification "VPN Disattivata" with title "Secure Tunnel" subtitle "Paused ⏸️"'
+             else
+                 networksetup -setsocksfirewallproxystate "$SERVICE" on
+                 printf "\n${GREEN}[RESUMED] VPN riattivata.${NC}\n"
+                 osascript -e 'display notification "VPN Attiva" with title "Secure Tunnel" subtitle "Resumed ▶️"'
+             fi
+        fi
     fi
 done
