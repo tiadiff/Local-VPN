@@ -70,7 +70,7 @@ sleep 1
     -cert "$DIR/client.crt" -key "$DIR/client.key" -ca "$DIR/ca.crt" &
 CLIENT_PID=$!
 
-printf "${GREEN}[RUN]  Sistema pronto. Premi 'p' per Pausa/Ripresa, CTRL+C per terminare.${NC}\n"
+printf "${GREEN}[RUN]  Sistema pronto. \nPremi 'p' per Pausa/Ripresa, CTRL+C per terminare.${NC}\n"
 echo "------------------------------------------------------------"
 
 while kill -0 $CLIENT_PID 2>/dev/null; do
