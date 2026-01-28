@@ -78,8 +78,13 @@ while kill -0 $CLIENT_PID 2>/dev/null; do
     # Silent read of 1 char with 1s timeout
     read -t 1 -n 1 -s key
     
+    # DEBUG: Show what is happening
+    # printf "DEBUG: Key read: '%s'\n" "$key"
+    
     # Check if key is actually empty (timeout) or not
     if [[ -n "$key" ]]; then
+        # printf "DEBUG: Key detected: '%s'\n" "$key"
+        
         if [[ "$key" == "p" || "$key" == "P" ]]; then
              # DEBUG: Print exact status
              RAW_STATUS=$(networksetup -getsocksfirewallproxy "$SERVICE" | grep "Enabled:")
@@ -88,7 +93,7 @@ while kill -0 $CLIENT_PID 2>/dev/null; do
              # Trim potential whitespace
              STATUS=$(echo "$STATUS" | xargs)
 
-             # printf "DEBUG: Raw=['%s'] Parsed=['%s']\n" "$RAW_STATUS" "$STATUS"
+             printf "DEBUG: RawStatus=['%s'] ParsedStatus=['%s']\n" "$RAW_STATUS" "$STATUS"
 
              if [ "$STATUS" == "Yes" ]; then
                  networksetup -setsocksfirewallproxystate "$SERVICE" off
