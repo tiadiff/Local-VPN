@@ -10,6 +10,9 @@ vpn.exe
 .DS_Store
 
 # Keys and Secrets
+*.key
+*.crt
+*.pem
 # Note: In a real app never commit secrets. 
 # We keep this warning here.
 

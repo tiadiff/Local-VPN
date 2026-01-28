@@ -18,7 +18,11 @@ type Config struct {
 	ServerAddr string
 	Port       int
 	SocksPort  int
-	Secret     string // Shared secret for simple authentication
+	Secret     string // Shared secret (Secondary, can be deprecated)
+	GenCerts   bool
+	CertFile   string
+	KeyFile    string
+	CAFile     string
 }
 
 func Load() (*Config, error) {
@@ -27,6 +31,11 @@ func Load() (*Config, error) {
 	port := flag.Int("port", 3000, "Port to listen on (server) or connect to (client)")
 	socksPort := flag.Int("socks", 1080, "Local SOCKS5 port (for socks mode)")
 	secret := flag.String("secret", "default-secret", "Shared secret for authentication")
+
+	genCerts := flag.Bool("gen-certs", false, "Generate new mTLS certificates and exit")
+	certFile := flag.String("cert", "server.crt", "Certificate file (server.crt or client.crt)")
+	keyFile := flag.String("key", "server.key", "Private Key file")
+	caFile := flag.String("ca", "ca.crt", "CA Certificate file")
 
 	flag.Parse()
 
@@ -38,9 +47,12 @@ func Load() (*Config, error) {
 		mode = ModeClient
 	case "socks":
 		mode = ModeSocks
-	default:	
-        // Default to client if not specified but server arg is present, else usage
-		return nil, fmt.Errorf("invalid mode: %s", *modeStr)
+	default:
+		if *genCerts {
+			return &Config{GenCerts: true}, nil
+		}
+		// If not generating certs, mode is required
+		return nil, fmt.Errorf("invalid or missing mode: %s", *modeStr)
 	}
 
 	return &Config{
@@ -49,5 +61,9 @@ func Load() (*Config, error) {
 		Port:       *port,
 		SocksPort:  *socksPort,
 		Secret:     *secret,
+		GenCerts:   *genCerts,
+		CertFile:   *certFile,
+		KeyFile:    *keyFile,
+		CAFile:     *caFile,
 	}, nil
 }

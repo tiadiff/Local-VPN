@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"vpn_proto/config"
+	"vpn_proto/crypto"
 	"vpn_proto/tunnel"
 )
 
@@ -18,6 +19,15 @@ func main() {
 	}
 
 	log.Printf("Starting VPN in %s mode", cfg.Mode)
+
+	if cfg.GenCerts {
+		log.Println("Generating mTLS certificates...")
+		if err := crypto.GenerateCerts(); err != nil {
+			log.Fatalf("Failed to generate certs: %v", err)
+		}
+		log.Println("Certificates generated: ca.crt, server.crt, client.crt (and keys)")
+		return
+	}
 
 	if cfg.Mode == config.ModeServer {
 		err = tunnel.StartServer(cfg)

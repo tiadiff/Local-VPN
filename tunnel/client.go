@@ -17,7 +17,10 @@ func StartClient(cfg *config.Config) error {
 	log.Printf("Connecting to server at %s...", serverEndpoint)
 
 	// 1. Connect to Server
-	tlsConfig := crypto.ClientTLSConfig()
+	tlsConfig, err := crypto.LoadClientTLS(cfg.CertFile, cfg.KeyFile, cfg.CAFile)
+	if err != nil {
+		return fmt.Errorf("failed to load mTLS: %v", err)
+	}
 	conn, err := tls.Dial("tcp", serverEndpoint, tlsConfig)
 	if err != nil {
 		return fmt.Errorf("failed to connect to server: %v", err)
@@ -43,9 +46,9 @@ func StartClient(cfg *config.Config) error {
 	defer ifce.Close()
 
 	log.Printf("Interface %s created", ifce.Name())
-    log.Println("Note: You must configure IP and routes manually for this prototype to work fully as a VPN.")
-    log.Printf("Example: sudo ifconfig %s 10.0.0.2 10.0.0.1 up", ifce.Name())
-    log.Printf("Example: sudo route add default 10.0.0.1")
+	log.Println("Note: You must configure IP and routes manually for this prototype to work fully as a VPN.")
+	log.Printf("Example: sudo ifconfig %s 10.0.0.2 10.0.0.1 up", ifce.Name())
+	log.Printf("Example: sudo route add default 10.0.0.1")
 
 	// 4. Start Pump
 	// TUN -> TCP
