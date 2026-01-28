@@ -100,10 +100,57 @@ var BlockList = []string{
 	"ads.pinterest.com",
 	"analytics.pinterest.com",
 
-	// Email Tracking
+	// Email Tracking / ESPs
 	"sendgrid.com",  // Often used for tracking pixels
 	"mailchimp.com", // Tracking pixels
 	"list-manage.com",
+	"mandrillapp.com",
+
+	// Mobile & Push Notification Tracking
+	"onesignal.com",
+	"urbanairship.com",
+	"braze.com",
+	"appboy.com", // Old Braze domain
+	"leanplum.com",
+	"airship.com",
+	"kochava.com", // Attribution
+
+	// Product Analytics & UX
+	"amplitude.com",
+	"heapanalytics.com",
+	"pendo.io",
+	"split.io",
+	"optimizely.com",
+	"inspectlet.com",
+	"mouseflow.com",
+
+	// Customer Feedback & Surveys
+	"qualtrics.com",
+	"medallia.com",
+	"usabilla.com",
+	"delighted.com",
+
+	// Performance Monitoring (RUM)
+	"nr-data.net", // New Relic
+	"bam.nr-data.net",
+	"browser-intake-datadoghq.com",
+	"sentry-cdn.com",
+
+	// Famous Ad Tech & Data Brokers
+	"adform.com",
+	"adform.net",
+	"demdex.net",      // Adobe Audience Manager
+	"everesttech.net", // Adobe
+	"omtrdc.net",      // Adobe SiteCatalyst
+	"2o7.net",         // Adobe
+	"bluekai.com",     // Oracle Data Cloud
+	"bkrtx.com",       // BlueKai
+	"exelator.com",    // Nielsen
+	"krxd.net",        // Salesforce DMP (Krux)
+	"liadm.com",       // LiveIntent
+	"rlcdn.com",       // Rapleaf
+	"pippio.com",      // LiveRamp
+	"acxiom.com",
 }
 
 // IsBlocked checks if the target host contains any of the blocked domains.
