@@ -48,21 +48,24 @@ To run the VPN automatically when you log in:
 3.  Navigate to your project folder and select `run_vpn.command`.
 4.  **Note**: Upon login, a terminal window will open and ask for your password to activate the proxy.
 
-## Privacy Features
-### Tracker Blocker 🛡️
-The VPN Server now includes a built-in **Tracker Blocker**.
-It automatically rejects connections to known ad and tracking domains (e.g., `doubleclick.net`, `facebook.net`, `googleadservices.com`).
-- **Log Message**: `[BLOCKED] Connection to tracker denied: ...`
-- **To Customize**: Edit `tunnel/blocklist.go` and rebuild (`go build -o vpn`).
+## Privacy & Security Features 🛡️
 
-## Security Note
-This setup currently runs both Client and Server on your local machine (`localhost`).
-**To actually hide your IP from your ISP:**
-1.  Copy the `vpn` binary to a remote server (e.g., AWS, DigitalOcean, or a friend's PC).
-2.  Run `./vpn -mode server ...` on that remote machine.
-3.  Run `./vpn -mode socks -server <REMOTE_IP> ...` on your Mac.
+### 1. Mutual TLS (mTLS) 🔐
+Authentication is strictly enforced using mTLS.
+- **Client Side**: Must present a valid `client.crt` signed by your private CA.
+- **Server Side**: Verifies the client certificate before accepting any connection.
+- **Benefit**: Immune to password brute-forcing and unauthorized scanning.
 
-Only then will your traffic truly emerge from a different location.
+### 2. DNS over HTTPS (DoH) 🕵️
+The Server automatically resolves domain names using **Cloudflare (1.1.1.1)** via encrypted HTTPS.
+- **Benefit**: Your ISP cannot see your DNS queries (hides which sites you visit).
+- **Log Message**: `[SEC] Resolving example.com via DoH...`
+
+### 3. Tracker Blocker 🚫
+The VPN Client includes a built-in **Tracker Blocker** that actively filters specific tracking domains.
+- **Mechanism**: Checks requests against a local blocklist before they leave your machine.
+- **Benefit**: Blocks ads and trackers at the source, saving bandwidth and protecting privacy.
+- **Log Message**: `[BLOCK] Connection denied (Client-side): doubleclick.net`
 The server listens for incoming connections and acts as the tunnel endpoint.
 ```bash
 # Listen on port 3000 (default) with a shared secret
@@ -107,8 +110,22 @@ You need to assign an IP and set up routes in a **separate terminal**:
     3.  Add default route via `10.0.0.1`.
 
 ## Verification
+
+### Basic Test
 On Client:
 ```bash
-ping 10.0.0.1
+curl -v --socks5 127.0.0.1:1080 https://www.google.com
 ```
-If you get a reply, the tunnel is up and encrypted!
+If you get a response and see `[INFO] SOCKS Request...` in your valid VPN terminal, it works!
+
+### Pro Tip: Verify Encryption Yourself 🕵️‍♂️
+Want to see the matrix? You can prove the traffic is encrypted by sniffing your own loopback interface:
+
+```bash
+sudo tcpdump -i lo0 -X port 3000
+```
+
+**What to look for:**
+- **Gibberish**: The data columns (right side) should look like random characters (`...T...F.E>.?...`). This is good! It means the payload is encrypted.
+- **TLS Handshake**: Look for `16 03 01` at the start of packets. This is the "Client Hello" signature of a TLS secured connection.
+- **No Plaintext**: You should NOT see any website names (like `google.com`) or HTML content in the data dump.
