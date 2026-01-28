@@ -108,6 +108,23 @@ func handleProxyRequest(clientConn net.Conn, target string) {
 	log.Printf("Proxying connection to %s", target)
 
 	// Connect to target
+	// Use DoH to resolve hostname to IP
+	host, port, _ := net.SplitHostPort(target)
+
+	// Check if host is an IP, if not, resolve via DoH
+	if net.ParseIP(host) == nil && host != "localhost" {
+		log.Printf("Resolving %s via DoH...", host)
+		ip, err := ResolveDoH(host)
+		if err != nil {
+			log.Printf("DoH failed for %s: %v. Falling back to system DNS.", host, err)
+			// Fallback or fail?
+			// Let's fallback for robustness but log warning
+		} else {
+			target = net.JoinHostPort(ip, port)
+			log.Printf("DoH Resolved: %s -> %s", host, ip)
+		}
+	}
+
 	targetConn, err := net.DialTimeout("tcp", target, 10*time.Second)
 	if err != nil {
 		log.Printf("Failed to dial target %s: %v", target, err)
