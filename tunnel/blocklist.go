@@ -3,7 +3,6 @@ package tunnel
 import "strings"
 
 // BlockList is a simple list of domains to block.
-// In a real app, this would be loaded from a file or external source.
 var BlockList = []string{
 	// Google / DoubleClick
 	"doubleclick.net",
@@ -69,6 +68,40 @@ var BlockList = []string{
 	"sentry.io",
 	"crashlytics.com",
 	"firebase-logging.googleapis.com",
+
+	// Retargeting & Programmatic
+	"criteo.com",
+	"criteo.net",
+	"teads.tv",
+	"adroll.com",
+	"rubiconproject.com",
+	"pubmatic.com",
+	"openx.net",
+	"adnxs.com", // AppNexus/Xandr
+	"smartadserver.com",
+	"moatads.com",
+
+	// Heatmaps & Session Recording
+	"hotjar.com",
+	"hotjar.io",
+	"crazyegg.com",
+	"luckyorange.com",
+	"fullstory.com",
+	"logrocket.io", // Often used for recording
+
+	// Social & Viral
+	"tiktok.com",  // Core domain (blocks app functionality too often, be careful or explicit)
+	"tiktokv.com", // Video CDN/Tracking
+	"musical.ly",
+	"snapchat.com",
+	"sc-cdn.net",
+	"pinterest.com", // Often used for tracking pixels
+	"pinimg.com",    // Tracking pixels often here too
+
+	// Email Tracking
+	"sendgrid.com",  // Often used for tracking pixels
+	"mailchimp.com", // Tracking pixels
+	"list-manage.com",
 }
 
 // IsBlocked checks if the target host contains any of the blocked domains.
