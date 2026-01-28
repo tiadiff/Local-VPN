@@ -89,14 +89,16 @@ var BlockList = []string{
 	"fullstory.com",
 	"logrocket.io", // Often used for recording
 
-	// Social & Viral
-	"tiktok.com",  // Core domain (blocks app functionality too often, be careful or explicit)
-	"tiktokv.com", // Video CDN/Tracking
-	"musical.ly",
-	"snapchat.com",
-	"sc-cdn.net",
-	"pinterest.com", // Often used for tracking pixels
-	"pinimg.com",    // Tracking pixels often here too
+	// Social & Viral (Trackers Only)
+	"ads.tiktok.com",
+	"analytics.tiktok.com",
+	"business-api.tiktok.com",
+	"ads.snapchat.com",
+	"tr.snapchat.com",  // Snapchat Pixel
+	"sc-static.net",    // Often ads
+	"ct.pinterest.com", // Pinterest Pixel
+	"ads.pinterest.com",
+	"analytics.pinterest.com",
 
 	// Email Tracking
 	"sendgrid.com",  // Often used for tracking pixels
