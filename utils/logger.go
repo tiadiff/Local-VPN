@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+	"os/exec"
+	"sync"
 	"time"
 )
 
@@ -19,8 +21,29 @@ const (
 	Bold   = "\033[1m"
 )
 
+var (
+	lastNotification time.Time
+	notifyMutex      sync.Mutex
+)
+
 func timestamp() string {
 	return time.Now().Format("15:04:05")
+}
+
+func NotifyBlocked(target string) {
+	notifyMutex.Lock()
+	defer notifyMutex.Unlock()
+
+	// Cooldown: 10 seconds
+	if time.Since(lastNotification) < 10*time.Second {
+		return
+	}
+
+	lastNotification = time.Now()
+
+	// Send macOS Notification
+	msg := fmt.Sprintf("display notification \"Blocked: %s\" with title \"Secure Tunnel\" subtitle \"Tracker Neutralized 🛡️\" sound name \"Pop\"", target)
+	exec.Command("osascript", "-e", msg).Start()
 }
 
 func Info(format string, args ...interface{}) {

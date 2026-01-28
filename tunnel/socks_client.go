@@ -123,6 +123,7 @@ func handleSocksConnection(localConn net.Conn, cfg *config.Config) {
 
 	if IsBlocked(target) {
 		utils.Block("Connection denied (Client-side): %s", target)
+		utils.NotifyBlocked(target)                                       // Trigger User Notification
 		localConn.Write([]byte{0x05, 0x02, 0x00, 0x01, 0, 0, 0, 0, 0, 0}) // Rule restricted
 		return
 	}
