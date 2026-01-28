@@ -12,14 +12,16 @@ If not already built:
 go build -o vpn
 ```
 
-## Quick Start (Automation Script)
+## Quick Start (AUTOMATIC Script)
 To start the VPN and automatically configure your Mac's proxy settings:
 1.  Navigate to the project folder.
 2.  Double-click `run_vpn.command`.
 3.  Enter your password when prompted (required to change network settings).
 4.  **To Stop**: Press `CTRL+C` in the terminal window. The proxy will be disabled automatically.
 
-## SOCKS5 Proxy Mode (Manual)
+Or..
+
+## SOCKS5 Proxy Mode (MANUAL)
 This mode creates a local proxy (port 1080) that tunnels traffic to the server safely without sudo.
 
 1.  **Start Server** (no sudo needed for this mode, but sudo enables fallback to TUN):
