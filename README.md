@@ -2,7 +2,7 @@
 
 This document explains how to use the Go-based encrypted tunnel system.
 
-<img width="568" height="368" alt="Schermata 2026-01-28 alle 22 40 56" src="https://github.com/user-attachments/assets/00680175-4b8c-4c7d-b22c-ae0734dcef65" />
+<img width="555" height="340" alt="Schermata 2026-01-28 alle 22 41 42" src="https://github.com/user-attachments/assets/59ec4a90-8501-4a88-b2ab-eb91461a8f44" />
 
 ## Prerequisites
 - **Go 1.18+** (Installed via `brew install go`)
