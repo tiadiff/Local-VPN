@@ -2,6 +2,8 @@
 
 This document explains how to use the Go-based encrypted tunnel system.
 
+<img width="568" height="368" alt="Schermata 2026-01-28 alle 22 40 56" src="https://github.com/user-attachments/assets/00680175-4b8c-4c7d-b22c-ae0734dcef65" />
+
 ## Prerequisites
 - **Go 1.18+** (Installed via `brew install go`)
 - **Sudo privileges** (Required for creating network interfaces)
