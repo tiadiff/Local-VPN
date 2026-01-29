@@ -56,7 +56,7 @@ This mode creates a local proxy (port 1080) that tunnels traffic to the server s
 To run the VPN automatically when you log in:
 1.  Open **System Settings** -> **General** -> **Login Items**.
 2.  Click the `+` button in the "Open at Login" section.
-3.  Navigate to your project folder and select `run_vpn.command`.
+3.  Navigate to your project folder and select `run_vpn.command` or `SecureTunnel.app`.
 4.  **Note**: Upon login, a terminal window will open and ask for your password to activate the proxy.
 
 ## Privacy & Security Features 🛡️
