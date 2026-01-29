@@ -35,6 +35,9 @@ cleanup() {
     # Kill background jobs
     kill $(jobs -p) 2>/dev/null
     
+    # Kill menubar if running
+    pkill vpn_menubar 2>/dev/null
+
     # Disable Proxy
     # echo "🔌 Disattivazione Proxy SOCKS su $SERVICE..."
     networksetup -setsocksfirewallproxystate "$SERVICE" off
@@ -70,30 +73,37 @@ sleep 1
     -cert "$DIR/client.crt" -key "$DIR/client.key" -ca "$DIR/ca.crt" &
 CLIENT_PID=$!
 
+# 4. Start Menubar Icon (Background as normal user)
+if [ -f "$DIR/vpn_menubar" ]; then
+    if [ -n "$SUDO_USER" ]; then
+        sudo -u "$SUDO_USER" "$DIR/vpn_menubar" &
+    else
+        "$DIR/vpn_menubar" &
+    fi
+    MENUBAR_PID=$!
+fi
+
 printf "${GREEN}[RUN]  Sistema pronto. \nPremi 'p' per Pausa/Ripresa, CTRL+C per terminare.${NC}\n"
 echo "------------------------------------------------------------"
 
 while kill -0 $CLIENT_PID 2>/dev/null; do
+    # Check if menubar is still alive if it was started
+    if [ -n "$MENUBAR_PID" ]; then
+        if ! kill -0 $MENUBAR_PID 2>/dev/null; then
+            printf "\n${YELLOW}[INFO] Menubar terminata. Chiusura VPN...${NC}\n"
+            break
+        fi
+    fi
+
     key=""
     # Silent read of 1 char with 1s timeout
     read -t 1 -n 1 -s key
     
-    # DEBUG: Show what is happening
-    # printf "DEBUG: Key read: '%s'\n" "$key"
-    
-    # Check if key is actually empty (timeout) or not
     if [[ -n "$key" ]]; then
-        # printf "DEBUG: Key detected: '%s'\n" "$key"
-        
         if [[ "$key" == "p" || "$key" == "P" ]]; then
-             # DEBUG: Print exact status
              RAW_STATUS=$(networksetup -getsocksfirewallproxy "$SERVICE" | grep "^Enabled:")
              STATUS=$(echo "$RAW_STATUS" | awk '{print $2}')
-             
-             # Trim potential whitespace
              STATUS=$(echo "$STATUS" | xargs)
-
-             # printf "DEBUG: RawStatus=['%s'] ParsedStatus=['%s']\n" "$RAW_STATUS" "$STATUS"
 
              if [ "$STATUS" == "Yes" ]; then
                  networksetup -setsocksfirewallproxystate "$SERVICE" off

@@ -2,22 +2,30 @@
 
 This document explains how to use the Go-based encrypted tunnel system.
 
-<img width="555" height="340" alt="Schermata 2026-01-28 alle 22 41 42" src="https://github.com/user-attachments/assets/59ec4a90-8501-4a88-b2ab-eb91461a8f44" />
+<img width="256" height="256" alt="SecureTunnel Icon" src="https://github.com/user-attachments/assets/59ec4a90-8501-4a88-b2ab-eb91461a8f44" />
+
+## 🚀 Native App (Recommended)
+You can now run the VPN as a native macOS application:
+1.  Download or Build the project.
+2.  Double-click `SecureTunnel.app`.
+3.  Enter your administrator password when prompted.
+4.  Look for the **🔒●** icon in your menu bar (top right).
+5.  **Control**: Use the menu bar icon to **Pause**, **Resume**, or **Show Logs**.
+6.  **Stop**: Select **Esci** from the menu bar icon or press `Cmd+Q`.
 
 ## Prerequisites
-- **Go 1.18+** (Installed via `brew install go`)
-- **Sudo privileges** (Required for creating network interfaces)
+- **Go 1.18+** (Required only for building)
+- **Swift** (Available by default on macOS)
 
-## Building
-If not already built:
+## 🛠️ Building
+To build everything (the VPN binary, the status bar utility, and the `.app` bundle):
 ```bash
-go build -o vpn
+./build_app.sh
 ```
 
-## Quick Start (AUTOMATIC Script)
-To start the VPN and automatically configure your Mac's proxy settings:
-1.  Navigate to the project folder.
-2.  Double-click `run_vpn.command`.
+## Quick Start (Terminal Script)
+If you prefer the terminal, you can still use the automation script:
+1.  Double-click `run_vpn.command`.
 3.  Enter your password when prompted (required to change network settings).
 4.  Press P from yourkeyboard to pause/resume the Tunneling.
 5.  **To stop**: Press CTRL+C in the terminal window or close all terminal windows with CMD+Q.. in both cases, the proxy will be automatically disabled.

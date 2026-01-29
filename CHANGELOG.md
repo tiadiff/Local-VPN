@@ -2,9 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-# Changelog
+## [v1.0.5] - macOS App Edition 🚀
+### Added
+- **Native macOS App Bundle**: Created `SecureTunnel.app` for a native experience.
+- **GUI Launcher**: New Swift-based launcher that handles administrator privileges via standard macOS dialogs.
+- **Status Bar Integration**: Native 🔒 icon with live status (● Green for Active, ● Red for Paused).
+- **Log Visibility**: Added "Visualizza Log" menu item to monitor VPN activity in real-time.
+- **Automatic Cleanup**: The app now automatically detects and terminates old VPN processes on startup to prevent port conflicts (Port 1080).
+- **Smart Shutdown**: Closing the app via "Esci" or `Cmd+Q` automatically stops all VPN services and restores network settings.
 
-All notable changes to this project will be documented in this file.
+### Changed
+- Improved the build system to generate icons from emojis and package the full `.app` structure.
 
 ## [v1.0.4] - Smart Notifications 🧠
 ### Added
