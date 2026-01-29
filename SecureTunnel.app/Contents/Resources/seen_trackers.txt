@@ -1,5 +1,0 @@
-www.googletagservices.com:443
-connect.facebook.net:443
-securepubads.g.doubleclick.net:443
-googleads.g.doubleclick.net:443
-browser.events.data.microsoft.com:443

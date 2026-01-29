@@ -11,17 +11,17 @@ class StatusMenuController: NSObject, NSUserNotificationCenterDelegate {
         
         setStatusIcon(active: true)
         
-        let pauseItem = NSMenuItem(title: "Pausa VPN", action: #selector(togglePause), keyEquivalent: "p")
+        let pauseItem = NSMenuItem(title: "Pause VPN", action: #selector(togglePause), keyEquivalent: "p")
         pauseItem.target = self
         menu.addItem(pauseItem)
         
-        let logsItem = NSMenuItem(title: "Visualizza Log", action: #selector(showLogs), keyEquivalent: "l")
+        let logsItem = NSMenuItem(title: "Show Logs", action: #selector(showLogs), keyEquivalent: "l")
         logsItem.target = self
         menu.addItem(logsItem)
         
         menu.addItem(NSMenuItem.separator())
         
-        let quitItem = NSMenuItem(title: "Esci", action: #selector(quit), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
         
@@ -66,14 +66,14 @@ class StatusMenuController: NSObject, NSUserNotificationCenterDelegate {
         isPaused = !isPaused
         if isPaused {
             setStatusIcon(active: false)
-            menu.item(at: 0)?.title = "Riprendi VPN"
+            menu.item(at: 0)?.title = "Resume VPN"
             shell("networksetup -setsocksfirewallproxystate Wi-Fi off")
-            notify(title: "VPN In Pausa", subtitle: "Traffico diretto attivato ⏸️")
+            notify(title: "VPN Paused", subtitle: "Direct traffic enabled ⏸️")
         } else {
             setStatusIcon(active: true)
-            menu.item(at: 0)?.title = "Pausa VPN"
+            menu.item(at: 0)?.title = "Pause VPN"
             shell("networksetup -setsocksfirewallproxystate Wi-Fi on")
-            notify(title: "VPN Attiva", subtitle: "Traffico protetto attivato ▶️")
+            notify(title: "VPN Active", subtitle: "Protected traffic enabled ▶️")
         }
     }
     
